@@ -4,14 +4,16 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.*;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.security.KeyPair;
 import java.security.PublicKey;
 
-public class Messenger {
-	
+public class Alice {
+
 	private static boolean DEBUG = true;
 	private static BufferedReader sysReader;
+	
 	//Cryptography
 	private static RSAcryptographer rsa;
 	private static PublicKey bobPublicKey;
@@ -29,59 +31,22 @@ public class Messenger {
 			DEBUG = true;
 		}
 		
-		System.out.println("Secure Messenger");
+		System.out.println("Secure Messenger - Alice");
 		System.out.println("Samuel Davidson - u0835059");
 		
 		Log("Building RSA cipher");
 		try {
-			rsa = new RSAcryptographer();
+			rsa = new RSAcryptographer("Alice");
 		} catch (Exception e) {
 			System.out.println("The RSA Cryptographer could not initialize. Exiting...");
 			return;
 		}
 		
 		sysReader = new BufferedReader(new InputStreamReader(System.in)); //Prepare for reading
-		int choice = 0;
-		while(choice != 1 || choice != 2) //Decision making
-		{
-			System.out.println("\n1 - Server (Bob) \t2 - Client (Alice)");
-			System.out.println("Are you 1 or 2?");
-			try{
-	            choice = Integer.parseInt(sysReader.readLine());
-	        }catch(NumberFormatException nfe){
-	            System.out.println("Invalid Format!");
-	        }
-		}
-		if(choice == 1) //SERVER
-		{
-			ServerSetup();
-		}
-		else if (choice == 2) //Client
-		{
-			ClientSetup();
-		}
+		ClientSetup();
 
 	}
 	
-	static void ServerSetup() throws IOException
-	{
-		System.out.println("You are the server (Bob).\nPort = 2115");
-		System.out.println("Awaiting client.");
-		
-		//Network setup
-		ServerSocket server = new ServerSocket(2121); 
-		socket = server.accept();
-		socketIn = new InputStreamReader(socket.getInputStream());
-		socketOut = new PrintWriter(socket.getOutputStream());
-		
-		//Cryptography setup
-		System.out.println("Establishing secure connection.");
-		KeyPair myKeys = rsa.GetKeys();
-		KeyPair CAkeys = rsa.CAkeys;
-		byte[] encPubKey = rsa.EncodePublicKey(myKeys.getPublic());
-		byte[] secPubKey = rsa.Encrypt(encPubKey, CAkeys.getPrivate());
-		socket.getOutputStream().write(secPubKey);
-	}
 	
 	static void ClientSetup() throws IOException
 	{
@@ -107,8 +72,7 @@ public class Messenger {
 			}
 			catch (Exception e)
 			{
-				System.out.println("Error connecting to host.");
-				e.printStackTrace();
+				System.out.println("Error connecting to host: " + e.getMessage());
 				continue;
 			}
 			
@@ -133,7 +97,7 @@ public class Messenger {
 			socket.close();
 			return;
 		}
-		
+		System.out.println("BobsKeyReceivedCorrectly");
 		//Bobs key received correctly
 		
 	}
