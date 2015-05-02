@@ -1,31 +1,66 @@
+//Samuel Davidson, u0835059, 5/1/2015, CS4480.
 package secureMessenger;
 
-import java.security.Key;
+import java.util.Random;
+
 import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 
 public class TripleDEScryptographer {
 
 	private Cipher cipher;
-	private KeyGenerator keyGen;
+	private SecretKey key;
 	
-	public TripleDEScryptographer()
+	public TripleDEScryptographer() throws Exception
 	{
-		try
-		{
-			cipher = Cipher.getInstance("DESede");
-			keyGen = KeyGenerator.getInstance("DESede");
-		}
-		catch (Exception e)
-		{
-			//Sam is dumb
+		byte [] keyBytes = new byte [24];
+		new Random().nextBytes(keyBytes);
+		
+		cipher = Cipher.getInstance("DESede/CBC/PKCS5Padding");	//Requires padding.	
+		key = new SecretKeySpec(keyBytes, "DESede");
+		
+	}
+	public byte[] Encrypt(byte[] bytes)
+	{
+		IvParameterSpec iv = new IvParameterSpec(new byte[8]);
+		
+		try {
+			cipher.init(Cipher.ENCRYPT_MODE, key, iv);
+			return cipher.doFinal(bytes);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
-			return;
+			return null;
 		}
+
+	}
+	public byte[] Decrypt(byte[] bytes)
+	{
+		IvParameterSpec iv = new IvParameterSpec(new byte[8]);
+		
+		try {
+			cipher.init(Cipher.DECRYPT_MODE, key, iv);
+			return cipher.doFinal(bytes);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+
+	}
+	public SecretKey GetKey()
+	{
+		return key;
 	}
 	
-	public Key GenerateKey()
+	public void ApplyKey(byte[] encodedKey) throws Exception
 	{
-		return keyGen.generateKey();
+		key = new SecretKeySpec(encodedKey, "DESede");
+		if(key == null)
+		{
+			throw new Exception("Key could not be generated");
+		}
 	}
 }

@@ -1,3 +1,4 @@
+//Samuel Davidson, u0835059, 5/1/2015, CS4480.
 package secureMessenger;
 
 import java.io.File;
