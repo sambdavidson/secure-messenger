@@ -6,6 +6,8 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.*;
 import java.security.KeyPair;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 
 public class Bob {
@@ -15,6 +17,7 @@ public class Bob {
 	
 	//Cryptography
 	private static RSAcryptographer rsa;
+	private static MessageDigest md;
 	private static PublicKey bobPublicKey;
 	
 	//Network
@@ -40,6 +43,15 @@ public class Bob {
 			System.out.println("The RSA Cryptographer could not initialize. Exiting...");
 			return;
 		}
+		
+		Log("Building SHA1 digester");
+		try {
+			md = MessageDigest.getInstance("SHA-1");
+		} catch (NoSuchAlgorithmException e) {
+			System.out.println("The SHA-1 message digest could not initialize. Exiting...");
+			return;
+		}
+		
 		sysReader = new BufferedReader(new InputStreamReader(System.in)); //Prepare for reading
 		ServerSetup();
 	}
@@ -51,6 +63,7 @@ public class Bob {
 		
 		//Network setup
 		ServerSocket server = new ServerSocket(2115);
+		
 		socket = server.accept();
 		socketIn = new InputStreamReader(socket.getInputStream());
 		socketOut = new PrintWriter(socket.getOutputStream());
@@ -60,19 +73,34 @@ public class Bob {
 		KeyPair myKeys = rsa.GetKeys();
 		KeyPair CAkeys = rsa.CAkeys;
 		byte[] encPubKey = rsa.EncodePublicKey(myKeys.getPublic());
-		byte[] plnPubKey = myKeys.getPublic().getEncoded();
-		byte[] CAK = CAkeys.getPrivate().getEncoded();
-		System.out.println(encPubKey.length + " | " + CAK.length);
-		byte[] secPubKey = rsa.Encrypt(plnPubKey, myKeys.getPublic());
-		socket.getOutputStream().write(secPubKey);
+		byte[] pubKeyDigest = md.digest(encPubKey);
+		Log("Encoded public key: " + ToHex(encPubKey));
+		Log("Digest of encoded public key: " + ToHex(pubKeyDigest));
+		byte[] secPubKeyDigest = rsa.Encrypt(pubKeyDigest, CAkeys.getPrivate());
+		System.out.println(secPubKeyDigest.length);
+		Log("Ecrypted digest using CA K-: " + ToHex(secPubKeyDigest));
+		socket.getOutputStream().write(encPubKey); //X bytes long
 	}
-	
+	/***
+	 * Debug text that prints when the command line argument "-v" is used.
+	 * @param str
+	 */
 	static void Log(String str)
 	{
 		if(DEBUG)
 		{
 			System.err.println("\nDebug:\t" + str);
 		}
+	}
+	
+	static String ToHex(byte[] input)
+	{
+		StringBuilder sb = new StringBuilder();
+		for(byte b: input)
+		{
+			sb.append(String.format("%02X ", b));
+		}
+		return sb.toString();
 	}
 
 }

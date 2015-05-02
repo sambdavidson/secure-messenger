@@ -4,9 +4,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.KeyPair;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 
 public class Alice {
@@ -16,6 +17,7 @@ public class Alice {
 	
 	//Cryptography
 	private static RSAcryptographer rsa;
+	private static MessageDigest md;
 	private static PublicKey bobPublicKey;
 	
 	//Network
@@ -39,6 +41,14 @@ public class Alice {
 			rsa = new RSAcryptographer("Alice");
 		} catch (Exception e) {
 			System.out.println("The RSA Cryptographer could not initialize. Exiting...");
+			return;
+		}
+		
+		Log("Building SHA1 digester");
+		try {
+			md = MessageDigest.getInstance("SHA-1");
+		} catch (NoSuchAlgorithmException e) {
+			System.out.println("The SHA-1 message digest could not initialize. Exiting...");
 			return;
 		}
 		
@@ -86,11 +96,21 @@ public class Alice {
 		KeyPair myKeys = rsa.GetKeys();
 		KeyPair CAkeys = rsa.CAkeys;
 		//Receive bob's public key
-		int read = socket.getInputStream().read(buffer);
-		byte[] secPubKey = new byte[read];
-		System.arraycopy(buffer, 0, secPubKey, 0, read);
-		byte[] bobPubKeyEnc = rsa.Decrypt(secPubKey, CAkeys.getPublic());
-		bobPublicKey = rsa.DecodePublicKey(bobPubKeyEnc);
+		int encKeySize = 294;
+		byte[] encPubKey = new byte[encKeySize];
+		int received = socket.getInputStream().read(encPubKey);
+		if(received != encKeySize)
+		{
+			System.out.println("ERROR Receiving! Expected " + encKeySize + " Actual " + received);
+		}
+		byte[] expectedDigest = md.digest(encPubKey);
+		received = socket.getInputStream().read(encPubKey);
+		if(received != encKeySize)
+		{
+			System.out.println("ERROR Receiving! Expected " + encKeySize + " Actual " + received);
+		}
+		
+		//bobPublicKey = rsa.DecodePublicKey(bobPubKeyEnc);
 		if(bobPublicKey == null)
 		{
 			System.err.println("Could not receive Bob's public key!");

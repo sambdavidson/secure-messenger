@@ -8,7 +8,6 @@ import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
-
 import javax.crypto.Cipher;
 
 // The reading and writing of keys to the file system borrows code heavily from example code found online.
