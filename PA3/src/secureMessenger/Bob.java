@@ -10,7 +10,7 @@ import java.util.Arrays;
 
 public class Bob {
 	
-	private static boolean DEBUG = false;
+	private static boolean DEBUG = true;
 	
 	//Cryptography
 	private static RSAcryptographer rsa;
@@ -128,6 +128,11 @@ public class Bob {
 		System.out.println("Establishing secure connection.");
 		KeyPair myKeys = rsa.GetKeys();
 		KeyPair CAkeys = rsa.CAkeys;
+		Log("Bob's public key: " + ToHex(myKeys.getPublic().getEncoded()));
+		Log("Bob's private key: " + ToHex(myKeys.getPrivate().getEncoded()));
+		Log("CA's public key: " + ToHex(CAkeys.getPublic().getEncoded()));
+		Log("CA's private key: " + ToHex(CAkeys.getPrivate().getEncoded()));
+		Log("Alice's public key: " + ToHex(rsa.AliceKey.getEncoded()));
 		
 		//Encoding bobs public key
 		byte[] encPubKey = rsa.EncodePublicKey(myKeys.getPublic());

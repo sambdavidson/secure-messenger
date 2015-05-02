@@ -13,7 +13,7 @@ import java.util.Arrays;
 
 public class Alice {
 
-	private static boolean DEBUG = false;
+	private static boolean DEBUG = true;
 	private static BufferedReader sysReader;
 	
 	//Cryptography
@@ -132,6 +132,10 @@ public class Alice {
 		//Cryptography setup
 		System.out.println("Establishing secure connection.");
 		KeyPair CAkeys = rsa.CAkeys;
+		KeyPair myKeys = rsa.GetKeys();
+		Log("Alice's public key: " + ToHex(myKeys.getPublic().getEncoded()));
+		Log("Alice's private key: " + ToHex(myKeys.getPrivate().getEncoded()));
+		Log("CA's public key: " + ToHex(CAkeys.getPublic().getEncoded()));
 		
 		//Receive bob's public key
 		int encKeySize = 294;
