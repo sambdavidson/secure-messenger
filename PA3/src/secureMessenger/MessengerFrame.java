@@ -8,7 +8,6 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
 
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
@@ -17,6 +16,7 @@ import javax.swing.JTextArea;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
 public class MessengerFrame implements ActionListener {
@@ -29,16 +29,17 @@ public class MessengerFrame implements ActionListener {
 	private JTextField portBox;
 	
 	//Actual message exchange stuff
-	private JTextArea outputArea;
+	JTextArea outputArea;
 	private JTextField inputBox;
 	private JButton sendButton;
 	
 	//Cryptography
 	private SecureMessenger messenger;
+	private Thread messengerThread;
 	
 	public static void main(String[] args) 
 	{
-		MessengerFrame mf = new MessengerFrame();
+		new MessengerFrame();
 	}
 	
 	public MessengerFrame() 
@@ -54,8 +55,8 @@ public class MessengerFrame implements ActionListener {
 		connectButton.addActionListener(this);
 		hostButton = new JButton("Host");
 		hostButton.addActionListener(this);
-		addressBox = new JTextField("Address");
-		portBox = new JTextField("Port");
+		addressBox = new JTextField("localhost");
+		portBox = new JTextField("3210");
 		
 		menuBar.add(connectButton);
 		menuBar.add(hostButton);
@@ -64,7 +65,7 @@ public class MessengerFrame implements ActionListener {
 		
 		myFrame.setJMenuBar(menuBar);
 		
-		outputArea = new JTextArea("Input port and click 'Host'\nOr\nInput address and port and click 'Connect'\n");
+		outputArea = new JTextArea();
 		outputArea.setMinimumSize(new Dimension(300,200));
 		outputArea.setEditable(false);
 		JScrollPane scrollArea = new JScrollPane(outputArea);
@@ -87,6 +88,8 @@ public class MessengerFrame implements ActionListener {
 		myFrame.setResizable(false);
 		
 		messenger = new SecureMessenger(this);
+		outputArea.append("\nInput port and click 'Host'\nOr\nInput address and port and click 'Connect'\n");
+		
 		myFrame.setVisible(true);
 	}
 
@@ -95,7 +98,26 @@ public class MessengerFrame implements ActionListener {
 	{
 		if(e.getSource() == connectButton)
 		{
-			OutputPrintln("Connect");
+			int port;
+			try
+			{
+				port = Integer.parseInt(portBox.getText());
+			}
+			catch(NumberFormatException exc)
+			{
+				MessageBox("Unable to parse port number.", "Port Error");
+				return;
+			}
+			if(port < 1023 || port > 65535)
+			{
+				MessageBox("Invalid port chosen. Port must be between 1023 and 65535.", "Port Error");
+				return;
+			}
+			messenger.isHost = false;
+			messenger.port = port;
+			messenger.host = addressBox.getText();
+			messengerThread = new Thread(messenger, "Secure Messenger Client");
+			messengerThread.start();
 		}
 		else if(e.getSource() == hostButton)
 		{
@@ -114,20 +136,32 @@ public class MessengerFrame implements ActionListener {
 				MessageBox("Invalid port chosen. Port must be between 1023 and 65535.", "Port Error");
 				return;
 			}
-			try 
-			{
-				messenger.ServerSetup(port);
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
+			messenger.isHost = true;
+			messenger.port = port;
+			messengerThread = new Thread(messenger, "Secure Messenger Server");
+			messengerThread.start();
+			
 		}
 		else if(e.getSource() == sendButton)
 		{
-			OutputPrintln("Send");
+			OutputPrintln("You:\n" + inputBox.getText());
+			messenger.Send(inputBox.getText());
+			inputBox.setText("");
 		}
 	}
-	
+	public void isSending(boolean b)
+	{
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+            	sendButton.setEnabled(b);
+            	inputBox.setEnabled(b);
+            }
+        });
+	}
+	/**
+	 * Prints to the output box on the frame.
+	 * @param str
+	 */
 	public void OutputPrintln(String str) 
 	{
 		outputArea.append(str + "\n");

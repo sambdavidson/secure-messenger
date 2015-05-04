@@ -21,8 +21,7 @@ public class RSAcryptographer {
 	private KeyPair keys;
 	public KeyPair CAkeys;
 	
-	//Only used if Bob... 
-	public PublicKey AliceKey;
+	public int EncodedKeySize;
 	
 	public RSAcryptographer(String keyPrefix) throws Exception
 	{
@@ -34,18 +33,23 @@ public class RSAcryptographer {
 			e.printStackTrace();
 			
 		} 
-		
 		// Read Our Public Key.
-		File fileKey = new File("keys/CertificateAuthorityPublic.key");
-		FileInputStream fis = new FileInputStream("keys/CertificateAuthorityPublic.key");
+		File fileKey = new File("keys/"+ keyPrefix + "Public.key");
+		File fileKey2 = new File("keys/"+ keyPrefix + "Private.key");
+		
+		if(!fileKey.exists() || fileKey.isDirectory() || !fileKey2.exists() || fileKey2.isDirectory())
+		{
+			GenerateKeyFiles(keyPrefix, 1024);
+		}
+		FileInputStream fis = new FileInputStream("keys/"+ keyPrefix + "Public.key");
+		EncodedKeySize = (int) fileKey.length();
 		byte[] encodedOurPublicKey = new byte[(int) fileKey.length()];
 		fis.read(encodedOurPublicKey);
 		fis.close();
  
 		// Read Our Private Key.
-		fileKey = new File("keys/CertificateAuthorityPrivate.key");
-		fis = new FileInputStream("keys/CertificateAuthorityPrivate.key");
-		byte[] encodedOurPrivateKey = new byte[(int) fileKey.length()];
+		fis = new FileInputStream("keys/"+ keyPrefix + "Private.key");
+		byte[] encodedOurPrivateKey = new byte[(int) fileKey2.length()];
 		fis.read(encodedOurPrivateKey);
 		fis.close();
 		
@@ -84,20 +88,6 @@ public class RSAcryptographer {
 		privateKey = keyFactory.generatePrivate(privateKeySpec);
 		
 		CAkeys = new KeyPair(publicKey, privateKey);
-		
-		if(keyPrefix == "Bob") // We need to load Alice's public key because the assignment spec is dumb and Bob already knows Alice's key for some reason.
-		{
-			// Read Alice Public Key.
-			fileKey = new File("keys/AlicePublic.key");
-			fis = new FileInputStream("keys/AlicePublic.key");
-			byte[] encodedAlicePublicKey = new byte[(int) fileKey.length()];
-			fis.read(encodedAlicePublicKey);
-			fis.close();
-			
-			publicKeySpec = new X509EncodedKeySpec(
-					encodedOurPublicKey);
-			AliceKey = keyFactory.generatePublic(publicKeySpec);
-		}
 	}
 	
 	public byte[] Encrypt(byte[] bytes, Key key)
