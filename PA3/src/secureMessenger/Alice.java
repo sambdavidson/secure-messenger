@@ -27,14 +27,13 @@ public class Alice {
 
 	public static void main(String[] args) throws IOException {
 		
-		if(args.length > 0 && args[0] == "-v") //Debugging
+		if(args.length > 0) //Debugging
 		{
 			DEBUG = true;
 		}
 		
 		System.out.println("Secure Messenger - Alice");
 		System.out.println("Samuel Davidson - u0835059");
-
 		Log("Building RSA cipher");
 		try {
 			rsa = new RSAcryptographer("Alice");
@@ -42,7 +41,6 @@ public class Alice {
 			System.out.println("The RSA Cryptographer could not initialize. Exiting...");
 			return;
 		}
-		
 		Log("Building SHA1 digester");
 		try {
 			md = MessageDigest.getInstance("SHA-1");
@@ -67,7 +65,6 @@ public class Alice {
 		{
 			return;
 		}
-		
 		String secretMessage = "Bob, I love CS4480. Sincerely, Alice."; // m
 		System.out.println("Sending secret message: " + secretMessage);
 		byte[] digestSM = md.digest(secretMessage.getBytes()); // H(m)
@@ -78,19 +75,19 @@ public class Alice {
 		byte[] digestPlusSM = new byte[arraySM.length + encDigestSM.length];
 		
 		//Create the array [EncDigest + SecretMessage]
-		System.arraycopy(encDigestSM, 0, digestPlusSM, 0, 256);
+		System.arraycopy(encDigestSM, 0, digestPlusSM, 0, 128);
 		System.arraycopy(arraySM, 0, digestPlusSM, encDigestSM.length, arraySM.length);// [Ka-(H(m)),SM]
 		byte[] encMessage = TripDes.Encrypt(digestPlusSM); // Ks(.)
 		Log("Entire ecrypted message plus digest: " + ToHex(encMessage));
 		
 		//Encrypt Ks with Bob's public key.
-		byte[] encKey = rsa.Encrypt(TripDes.GetKey().getEncoded(), bobPublicKey); //256 bytes in length
+		byte[] encKey = rsa.Encrypt(TripDes.GetKey().getEncoded(), bobPublicKey); //128 bytes in length
 		Log("3DES key encrypted with Bob's public: " + ToHex(encKey));
 		
 		//Create the final message
 		byte[] messageFinal = new byte[encKey.length + encMessage.length];
-		System.arraycopy(encKey, 0, messageFinal, 0, 256);
-		System.arraycopy(encMessage, 0, messageFinal, 256, encMessage.length);
+		System.arraycopy(encKey, 0, messageFinal, 0, 128);
+		System.arraycopy(encMessage, 0, messageFinal, 128, encMessage.length);
 		socket.getOutputStream().write(messageFinal);
 		Log("Final message sent to Bob: " + ToHex(messageFinal));
 		//WE DID IT! Hopefully Bob gets our secret message!
@@ -138,7 +135,7 @@ public class Alice {
 		Log("CA's public key: " + ToHex(CAkeys.getPublic().getEncoded()));
 		
 		//Receive bob's public key
-		int encKeySize = 294;
+		int encKeySize = 162;
 		byte[] encPubKey = new byte[encKeySize];
 		int received = socket.getInputStream().read(encPubKey);
 		Log("Received Bob's encoded public key: " + ToHex(encPubKey));

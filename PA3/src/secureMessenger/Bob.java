@@ -23,14 +23,15 @@ public class Bob {
 
 	public static void main(String[] args) throws IOException {
 		
-		if(args.length > 0 && args[0] == "-v") //Debugging
+		if(args.length > 0) //Debugging
 		{
 			DEBUG = true;
 		}
+		//rsa.GenerateKeyFiles("Bob", 1024);
+		//rsa.GenerateKeyFiles("Alice", 1024);
 		
 		System.out.println("Secure Messenger - Bob");
 		System.out.println("Samuel Davidson - u0835059");
-		
 		Log("Building RSA cipher");
 		try {
 			rsa = new RSAcryptographer("Bob");
@@ -65,15 +66,15 @@ public class Bob {
 			socket.close();
 			return;
 		}
-		if(read < 256)
+		if(read < 128)
 		{
 			System.out.println("Received message was not of an expected size. Exiting.");
 			socket.close();
 			return;
 		}
 		Log("Received message from Alice.");
-		byte[] encDESkey = new byte[256];
-		System.arraycopy(buffer, 0, encDESkey, 0, 256); //The first 256 bytes are the encDESkey
+		byte[] encDESkey = new byte[128];
+		System.arraycopy(buffer, 0, encDESkey, 0, 128); //The first 256 bytes are the encDESkey
 		Log("Encoded 3DES key: " + ToHex(encDESkey));
 		byte[] DESkey = rsa.Decrypt(encDESkey, rsa.GetKeys().getPrivate());
 		Log("Decoded 3DES key: " + ToHex(DESkey));
@@ -86,15 +87,15 @@ public class Bob {
 		}
 		
 		//Time to get message + message digest
-		byte[] encMessage = new byte[(read - 256)]; //The remaining after extracting Ks.
-		System.arraycopy(buffer, 256, encMessage, 0, (read - 256));
+		byte[] encMessage = new byte[(read - 128)]; //The remaining after extracting Ks.
+		System.arraycopy(buffer, 128, encMessage, 0, (read - 128));
 		Log("Encrypted (3DES) message plus encoded Digest: " + ToHex(encMessage));
 		byte[] messagePlusDigest = TripDes.Decrypt(encMessage);
 		Log("Decrypted (3DES) message plus encoded Digest: " + ToHex(messagePlusDigest));
-		byte[] encDigest = new byte[256];
-		byte[] messageArray = new byte[messagePlusDigest.length - 256];
-		System.arraycopy(messagePlusDigest, 0, encDigest, 0, 256); //Ka-(H(m))
-		System.arraycopy(messagePlusDigest, 256, messageArray, 0, messagePlusDigest.length - 256); //m
+		byte[] encDigest = new byte[128];
+		byte[] messageArray = new byte[messagePlusDigest.length - 128];
+		System.arraycopy(messagePlusDigest, 0, encDigest, 0, 128); //Ka-(H(m))
+		System.arraycopy(messagePlusDigest, 128, messageArray, 0, messagePlusDigest.length - 128); //m
 		byte[] digest = rsa.Decrypt(encDigest, rsa.AliceKey); //H(m)
 		Log("Digest of message decrypted with Alice's key: " + ToHex(digest));
 		byte[] ourDigest = md.digest(messageArray); // H(m)
@@ -135,7 +136,7 @@ public class Bob {
 		Log("Alice's public key: " + ToHex(rsa.AliceKey.getEncoded()));
 		
 		//Encoding bobs public key
-		byte[] encPubKey = rsa.EncodePublicKey(myKeys.getPublic());
+		byte[] encPubKey = rsa.EncodePublicKey(myKeys.getPublic()); //162
 		byte[] pubKeyDigest = md.digest(encPubKey);
 		Log("Encoded public key: " + ToHex(encPubKey));
 		Log("Digest of encoded public key: " + ToHex(pubKeyDigest));

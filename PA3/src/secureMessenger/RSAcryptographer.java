@@ -34,15 +34,15 @@ public class RSAcryptographer {
 		} 
 		
 		// Read Our Public Key.
-		File fileKey = new File("keys/CertificateAuthorityPublic.key");
-		FileInputStream fis = new FileInputStream("keys/CertificateAuthorityPublic.key");
+		File fileKey = new File("keys/"+ keyPrefix + "Public.key");
+		FileInputStream fis = new FileInputStream("keys/"+ keyPrefix + "Public.key");
 		byte[] encodedOurPublicKey = new byte[(int) fileKey.length()];
 		fis.read(encodedOurPublicKey);
 		fis.close();
  
 		// Read Our Private Key.
-		fileKey = new File("keys/CertificateAuthorityPrivate.key");
-		fis = new FileInputStream("keys/CertificateAuthorityPrivate.key");
+		fileKey = new File("keys/"+ keyPrefix + "Private.key");
+		fis = new FileInputStream("keys/"+ keyPrefix + "Private.key");
 		byte[] encodedOurPrivateKey = new byte[(int) fileKey.length()];
 		fis.read(encodedOurPrivateKey);
 		fis.close();
@@ -93,7 +93,7 @@ public class RSAcryptographer {
 			fis.close();
 			
 			publicKeySpec = new X509EncodedKeySpec(
-					encodedOurPublicKey);
+					encodedAlicePublicKey);
 			AliceKey = keyFactory.generatePublic(publicKeySpec);
 		}
 	}
