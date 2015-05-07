@@ -284,6 +284,11 @@ public class SecureMessenger implements Runnable {
 				GUI.isSending(true);
 				listenLoop();
 			} catch (IOException e) {
+				if(e instanceof SocketException)
+				{
+					Log("Connection Lost.");
+					return;
+				}
 				Log("Error running client. See console.");
 				e.printStackTrace();
 			}
