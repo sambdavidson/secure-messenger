@@ -20,4 +20,3 @@ The connection would terminate as soon as this single message was sent.
 
 Known issues:
 - The application can get stuck on "Establishing secure connection." Usually on LANs and when communicating over certain types of firewalls.
-- The GUI is somewhat unpolished. The disabling and re-enabling of certain GUI elements can be buggy. The output text is poorly formatted and hard to read. The send button will not activate when 'Enter' is pressed.
