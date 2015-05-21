@@ -62,9 +62,9 @@ public class SecureMessenger implements Runnable {
 	
 	private void listenLoop() throws IOException
 	{
-		String name = "Client";
+		String name = "Host"; //Other person's Identity.
 		if(isHost)
-			name = "Host";
+			name = "Client";
 		while(true)
 		{
 			int read = socket.getInputStream().read(buffer);
@@ -78,7 +78,7 @@ public class SecureMessenger implements Runnable {
 			byte[] message = new byte[read];
 			System.arraycopy(buffer, 0, message, 0, read);
 			message = TripDes.Decrypt(message);
-			Log(name + ":\n" + new String(message));
+			Log("\n" + name + ":\n" + new String(message));
 		}
 	}
 	public void Send(String message)
@@ -139,7 +139,7 @@ public class SecureMessenger implements Runnable {
 		}
 		byte[] welcomeMessage = new byte[read];
 		System.arraycopy(buffer, 0, welcomeMessage, 0, read);
-		Log("Host Says:\n" + new String(TripDes.Decrypt(welcomeMessage)));
+		Log("\nSecurely Connected!\nWelcome Message:\n" + new String(TripDes.Decrypt(welcomeMessage)));
 	}
 	
 	public void ClientSetup(String host, int port) throws IOException
@@ -227,6 +227,7 @@ public class SecureMessenger implements Runnable {
 		
 		byte[] welcomeMessage = TripDes.Encrypt("You may now send me secure messages!".getBytes());
 		socket.getOutputStream().write(welcomeMessage);
+		Log("Secure connection established!\n");
 		
 	}
 	/**

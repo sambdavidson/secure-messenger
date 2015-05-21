@@ -18,6 +18,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
+import javax.swing.text.DefaultCaret;
 
 public class MessengerFrame implements ActionListener {
 	
@@ -68,10 +69,14 @@ public class MessengerFrame implements ActionListener {
 		outputArea = new JTextArea();
 		outputArea.setMinimumSize(new Dimension(300,200));
 		outputArea.setEditable(false);
+		outputArea.setLineWrap(true);
 		JScrollPane scrollArea = new JScrollPane(outputArea);
+		DefaultCaret caret = (DefaultCaret)outputArea.getCaret();
+		caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
 		
 		inputBox = new JTextField();
 		inputBox.setEnabled(false);
+		inputBox.addActionListener(this);
 		sendButton = new JButton("Send");
 		sendButton.addActionListener(this);
 		sendButton.setMaximumSize(new Dimension(100,50));
@@ -88,7 +93,7 @@ public class MessengerFrame implements ActionListener {
 		myFrame.setResizable(false);
 		
 		messenger = new SecureMessenger(this);
-		outputArea.append("\nInput port and click 'Host'\nOr\nInput address and port and click 'Connect'\n");
+		outputArea.append("\nInput port and click 'Host'\nOr\nInput address and port and click 'Connect'\n\n");
 		
 		myFrame.setVisible(true);
 	}
@@ -148,6 +153,12 @@ public class MessengerFrame implements ActionListener {
 			messenger.Send(inputBox.getText());
 			inputBox.setText("");
 		}
+		else if(e.getSource() == inputBox) //Enter is pressed while in the inputBox
+		{
+			OutputPrintln("You:\n" + inputBox.getText());
+			messenger.Send(inputBox.getText());
+			inputBox.setText("");
+		}
 	}
 	public void isSending(boolean b)
 	{
@@ -164,7 +175,7 @@ public class MessengerFrame implements ActionListener {
 	 */
 	public void OutputPrintln(String str) 
 	{
-		outputArea.append(str + "\n");
+		outputArea.append("\n" + str + "\n");
 	}
 	
 	/**
