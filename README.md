@@ -24,4 +24,4 @@ Known issues:
 
 ### Setup
 
-This is a Java application made in Eclipse. It can likely simply be built using `javac` in the command line, but it may need to be imported into Eclipse and built there to work properly.
+This is a Java application made in Eclipse. It can likely be built using `javac` in the command line, but it may need to be imported into Eclipse and built there to work properly.
