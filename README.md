@@ -1,4 +1,4 @@
-# secure-messenger
+# Secure Messenger
 ### Send secure messages over a network!
 
 ![The application when first opened](docs/images/start.png)
@@ -20,3 +20,8 @@ The connection would terminate as soon as this single message was sent.
 
 Known issues:
 - The application can get stuck on "Establishing secure connection." Usually on LANs and when communicating over certain types of firewalls.
+
+
+### Setup
+
+This is a Java application made in Eclipse. It can likely simply be built using `javac` in the command line, but it may need to be imported into Eclipse and built there to work properly.
