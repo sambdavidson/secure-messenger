@@ -1,5 +1,5 @@
 // Samuel Davidson
-// https://github.com/samdamana
+// https://github.com/sambdavidson
 
 package secureMessenger;
 
